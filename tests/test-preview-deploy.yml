@@ -1,0 +1,35 @@
+name: Test preview before deploy mode
+on:
+  workflow_dispatch:
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+
+      - name: Create dist directory with sample files
+        run: |
+          mkdir -p preview-site
+          echo "<html><body>Preview Test</body></html>" > preview-site/index.html
+          echo "h1 { color: blue; }" > preview-site/style.css
+
+      - id: action
+        uses: .
+        with:
+          api_key: fake-api-key-for-testing
+          dist_dir: preview-site
+          preview_before_deploy: 'true'
+        continue-on-error: true
+
+      - name: Assert action failed (preview + deploy both require valid API key)
+        env:
+          OUTCOME: ${{ steps.action.outcome }}
+        run: |
+          echo "outcome: $OUTCOME"
+          # With preview_before_deploy=true, the action first calls previewDeploy
+          # then deploy — both require a valid API key, so it should fail.
+          if [ "$OUTCOME" != "failure" ]; then
+            echo "FAIL: expected action to fail with invalid API key in preview mode, got outcome=$OUTCOME"
+            exit 1
+          fi
+          echo "PASS: action correctly failed in preview mode with invalid API key"

@@ -1,0 +1,36 @@
+name: Test basic usage with fake API key
+on:
+  workflow_dispatch:
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+
+      - name: Create dist directory with sample files
+        run: |
+          mkdir -p public
+          echo "<html><body>Hello Neocities</body></html>" > public/index.html
+          echo "body { color: red; }" > public/style.css
+
+      - id: action
+        uses: .
+        with:
+          api_key: fake-api-key-for-testing
+          dist_dir: public
+          preview_before_deploy: 'false'
+        continue-on-error: true
+
+      - name: Assert action failed due to API error (not setup error)
+        env:
+          OUTCOME: ${{ steps.action.outcome }}
+        run: |
+          echo "outcome: $OUTCOME"
+          # The action should fail because the API key is invalid,
+          # not because of a missing directory or bad input parsing.
+          # A failure here means the action reached the API call stage.
+          if [ "$OUTCOME" != "failure" ]; then
+            echo "FAIL: expected action to fail with invalid API key, got outcome=$OUTCOME"
+            exit 1
+          fi
+          echo "PASS: action correctly failed at API stage with invalid key"

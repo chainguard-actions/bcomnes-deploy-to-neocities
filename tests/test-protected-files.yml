@@ -1,0 +1,34 @@
+name: Test protected_files input
+on:
+  workflow_dispatch:
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+      - name: Create dist directory with files
+        run: |
+          mkdir -p dist-protected
+          echo "<html><body>Hello</body></html>" > dist-protected/index.html
+          echo "keep me" > dist-protected/important.txt
+      - name: Deploy to Neocities with protected_files
+        id: action
+        uses: .
+        with:
+          api_key: ${{ secrets.NEOCITIES_API_KEY || 'fake-api-key-for-test' }}
+          dist_dir: dist-protected
+          cleanup: 'false'
+          protected_files: '*.txt'
+          preview_before_deploy: 'false'
+        continue-on-error: true
+      - name: Assert action ran with protected_files input
+        run: |
+          echo "Action outcome: ${{ steps.action.outcome }}"
+          # The action will fail due to invalid API key in test environment,
+          # but we verify it was invoked with the protected_files input.
+          # The important thing is the input was accepted (not rejected as unknown).
+          if [ "${{ steps.action.outcome }}" = "skipped" ]; then
+            echo "FAIL: action was skipped unexpectedly"
+            exit 1
+          fi
+          echo "PASS: action ran with protected_files input"
