@@ -1,1 +1,15 @@
-# bcomnes-deploy-to-neocities
+# bcomnes/deploy-to-neocities
+
+Efficiently deploy a folder to Neocities.org
+
+Hardened by [Chainguard](https://www.chainguard.dev) from the upstream action at [https://github.com/bcomnes/deploy-to-neocities](https://github.com/bcomnes/deploy-to-neocities).
+
+## Versions
+
+| Version | Tag | Upstream commit |
+|---------|-----|-----------------|
+| v3.0.3 | [`v3.0.3`](https://github.com/chainguard-actions/bcomnes-deploy-to-neocities/tree/v3.0.3) | [`3b9c0ff`](https://github.com/bcomnes/deploy-to-neocities/commit/3b9c0ff6a8ef32eff6c59d8db8e25f000f9b0ca5) |
+
+## Privacy
+
+This Action contacts Chainguard's licensing server to verify authorization. Connection metadata (IP address, GitHub repository identifier, timestamp, and any metadata encoded in the auth token) is transmitted to Chainguard, Inc. even if authorization is denied in accordance with our [Privacy Notice](https://www.chainguard.dev/legal/privacy-notice)
