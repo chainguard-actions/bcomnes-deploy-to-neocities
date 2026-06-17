@@ -1,0 +1,35 @@
+name: Test deploy with cleanup enabled (invalid API key - expect auth failure)
+on:
+  workflow_dispatch:
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+
+      - name: Create dist directory with sample files
+        run: |
+          mkdir -p site_output
+          echo "<html><body>Cleanup Test</body></html>" > site_output/index.html
+          echo "p { font-size: 14px; }" > site_output/main.css
+
+      - name: Run deploy action with cleanup (expect failure due to invalid API key)
+        id: deploy
+        uses: .
+        with:
+          api_key: 'invalid-test-api-key-cleanup'
+          dist_dir: 'site_output'
+          cleanup: 'true'
+          preview_before_deploy: 'false'
+        continue-on-error: true
+
+      - name: Assert action failed (not a setup error)
+        env:
+          OUTCOME: ${{ steps.deploy.outcome }}
+        run: |
+          echo "outcome: $OUTCOME"
+          if [ "$OUTCOME" != "failure" ]; then
+            echo "FAIL: expected action to fail with invalid API key, got outcome=$OUTCOME"
+            exit 1
+          fi
+          echo "PASS: action correctly failed when given an invalid API key with cleanup=true"
