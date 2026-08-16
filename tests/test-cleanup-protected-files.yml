@@ -1,0 +1,38 @@
+name: Test cleanup mode with protected_files input
+on:
+  workflow_dispatch:
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+
+      - name: Create dist directory with sample files
+        run: |
+          mkdir -p "$GITHUB_WORKSPACE/site"
+          echo "<html><body>Cleanup Test</body></html>" > "$GITHUB_WORKSPACE/site/index.html"
+          echo "body { margin: 0; }" > "$GITHUB_WORKSPACE/site/style.css"
+          mkdir -p "$GITHUB_WORKSPACE/site/assets"
+          echo "asset content" > "$GITHUB_WORKSPACE/site/assets/logo.png"
+
+      - id: action
+        uses: .
+        with:
+          api_key: fake-api-key-for-testing
+          dist_dir: site
+          cleanup: 'true'
+          neocities_supporter: 'false'
+          preview_before_deploy: 'false'
+          protected_files: '*.png'
+        continue-on-error: true
+
+      - name: Assert action failed at API stage (not at input parsing)
+        env:
+          OUTCOME: ${{ steps.action.outcome }}
+        run: |
+          echo "outcome: $OUTCOME"
+          if [ "$OUTCOME" != "failure" ]; then
+            echo "FAIL: expected action to fail with invalid API key (cleanup+protected_files mode), but got: $OUTCOME"
+            exit 1
+          fi
+          echo "PASS: action correctly failed with invalid API key in cleanup+protected_files mode"

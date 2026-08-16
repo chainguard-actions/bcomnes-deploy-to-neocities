@@ -1,4 +1,4 @@
-name: Test basic usage - invalid API key fails at API stage
+name: Test preview mode with invalid API key
 on:
   workflow_dispatch:
 jobs:
@@ -9,27 +9,26 @@ jobs:
 
       - name: Create dist directory with sample files
         run: |
-          mkdir -p "$GITHUB_WORKSPACE/public"
-          echo "<html><body>Hello Neocities</body></html>" > "$GITHUB_WORKSPACE/public/index.html"
-          echo "body { color: red; }" > "$GITHUB_WORKSPACE/public/style.css"
+          mkdir -p "$GITHUB_WORKSPACE/dist"
+          echo "<html><body>Preview Test</body></html>" > "$GITHUB_WORKSPACE/dist/index.html"
 
       - id: action
         uses: .
         with:
           api_key: fake-api-key-for-testing
-          dist_dir: public
+          dist_dir: dist
           cleanup: 'false'
           neocities_supporter: 'false'
-          preview_before_deploy: 'false'
+          preview_before_deploy: 'true'
         continue-on-error: true
 
-      - name: Assert action failed (expected - fake API key causes auth error)
+      - name: Assert action failed (expected - fake API key causes auth error during preview)
         env:
           OUTCOME: ${{ steps.action.outcome }}
         run: |
           echo "outcome: $OUTCOME"
           if [ "$OUTCOME" != "failure" ]; then
-            echo "FAIL: expected action to fail with invalid API key, but got: $OUTCOME"
+            echo "FAIL: expected action to fail with invalid API key in preview mode, but got: $OUTCOME"
             exit 1
           fi
-          echo "PASS: action correctly failed with invalid API key"
+          echo "PASS: action correctly failed with invalid API key in preview mode"

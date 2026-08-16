@@ -7135,7 +7135,7 @@
       "format": "cjs"
     },
     "node_modules/brace-expansion/index.js": {
-      "bytes": 5196,
+      "bytes": 5809,
       "imports": [
         {
           "path": "node_modules/balanced-match/index.js",
@@ -7269,7 +7269,7 @@
       "imports": [],
       "exports": [],
       "inputs": {},
-      "bytes": 3674882
+      "bytes": 3675617
     },
     "dist/index.cjs": {
       "imports": [
@@ -9485,7 +9485,7 @@
           "bytesInOutput": 1529
         },
         "node_modules/brace-expansion/index.js": {
-          "bytesInOutput": 4982
+          "bytesInOutput": 5142
         },
         "index.js": {
           "bytesInOutput": 2882
@@ -9542,7 +9542,7 @@
           "bytesInOutput": 165
         }
       },
-      "bytes": 2230727
+      "bytes": 2230887
     }
   }
 }
