@@ -8,25 +8,25 @@ jobs:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
       - name: Create dist directory with files
         run: |
-          mkdir -p dist-protected
-          echo "<html><body>Hello</body></html>" > dist-protected/index.html
-          echo "keep me" > dist-protected/protected.html
+          mkdir -p /tmp/test-dist
+          echo "<html><body>Hello</body></html>" > /tmp/test-dist/index.html
+          echo "keep me" > /tmp/test-dist/protected.html
       - id: action
         uses: .
         continue-on-error: true
         with:
-          api_key: invalid-test-key-for-coverage
-          dist_dir: dist-protected
+          api_key: 'invalid-api-key-for-testing'
+          dist_dir: '/tmp/test-dist'
           cleanup: 'true'
           protected_files: 'protected.html'
           preview_before_deploy: 'false'
-      - name: Assert action ran (expected failure due to invalid API key)
+      - name: Assert action failed due to invalid API key (not due to protected_files input error)
         env:
           OUTCOME: ${{ steps.action.outcome }}
         run: |
           echo "outcome: $OUTCOME"
-          if [ "$OUTCOME" = "skipped" ]; then
-            echo "FAIL: action was skipped unexpectedly"
+          if [ "$OUTCOME" = "success" ]; then
+            echo "FAIL: expected action to fail with invalid API key"
             exit 1
           fi
-          echo "PASS: action ran (outcome: $OUTCOME)"
+          echo "PASS: action failed as expected (invalid API key, not input validation error)"

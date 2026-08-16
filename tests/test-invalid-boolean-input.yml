@@ -1,4 +1,4 @@
-name: Test invalid API key fails at deploy stage
+name: Test invalid boolean input fails with assertion error
 on:
   workflow_dispatch:
 jobs:
@@ -10,26 +10,26 @@ jobs:
       - name: Create a dist directory with sample content
         run: |
           mkdir -p "$GITHUB_WORKSPACE/public"
-          echo "<html><body>Hello Neocities</body></html>" > "$GITHUB_WORKSPACE/public/index.html"
+          echo "<html><body>Test</body></html>" > "$GITHUB_WORKSPACE/public/index.html"
 
-      - name: Run action with invalid API key (expect failure at API stage)
+      - name: Run action with invalid cleanup boolean value (expect failure)
         id: action
         uses: .
         with:
-          api_key: invalid-api-key-for-testing
+          api_key: fake-key-for-validation-test
           dist_dir: public
-          cleanup: 'false'
+          cleanup: 'not-a-boolean'
           neocities_supporter: 'false'
           preview_before_deploy: 'false'
         continue-on-error: true
 
-      - name: Assert action failed due to invalid API key
+      - name: Assert action failed due to invalid boolean input
         env:
           OUTCOME: ${{ steps.action.outcome }}
         run: |
           echo "outcome: $OUTCOME"
           if [ "$OUTCOME" != "failure" ]; then
-            echo "FAIL: expected action to fail with invalid API key, but got outcome: $OUTCOME"
+            echo "FAIL: expected action to fail when cleanup is not a valid boolean, but got outcome: $OUTCOME"
             exit 1
           fi
-          echo "PASS: action correctly failed with invalid API key"
+          echo "PASS: action correctly failed with invalid boolean input for cleanup"
