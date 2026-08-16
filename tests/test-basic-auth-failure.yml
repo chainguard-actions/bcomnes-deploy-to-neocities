@@ -1,4 +1,4 @@
-name: Test deploy with deprecated api_token input
+name: Test basic deploy - auth failure with fake key
 on:
   workflow_dispatch:
 jobs:
@@ -10,13 +10,13 @@ jobs:
       - name: Create dist directory with sample files
         run: |
           mkdir -p public
-          echo "<html><body>Deprecated Token Test</body></html>" > public/index.html
+          echo "<html><body>Hello Neocities</body></html>" > public/index.html
+          echo "body { color: red; }" > public/style.css
 
       - id: deploy
         uses: .
         with:
           api_key: fake-api-key-for-testing
-          api_token: fake-deprecated-token
           dist_dir: public
           cleanup: 'false'
           preview_before_deploy: 'false'
@@ -26,7 +26,7 @@ jobs:
         run: |
           echo "outcome: ${{ steps.deploy.outcome }}"
           if [ "${{ steps.deploy.outcome }}" != "failure" ]; then
-            echo "FAIL: expected action to fail with a fake API key (deprecated api_token test), but got: ${{ steps.deploy.outcome }}"
+            echo "FAIL: expected action to fail with a fake API key, but got outcome: ${{ steps.deploy.outcome }}"
             exit 1
           fi
-          echo "PASS: action correctly failed with fake API key when using deprecated api_token input"
+          echo "PASS: action correctly failed with fake API key"

@@ -1,4 +1,4 @@
-name: Test protected_files input
+name: Test deploy with protected_files glob
 on:
   workflow_dispatch:
 jobs:
@@ -6,31 +6,29 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
-      - name: Create dist directory with files
+
+      - name: Create dist directory with sample files
         run: |
-          mkdir -p dist-protected
-          echo "<html><body>Hello</body></html>" > dist-protected/index.html
-          echo "body { color: red; }" > dist-protected/style.css
-      - id: action
+          mkdir -p site
+          echo "<html><body>Protected Files Test</body></html>" > site/index.html
+          echo "keep me" > site/important.txt
+          echo "also keep" > site/config.json
+
+      - id: deploy
         uses: .
         with:
           api_key: fake-api-key-for-testing
-          dist_dir: dist-protected
-          cleanup: 'false'
+          dist_dir: site
+          cleanup: 'true'
+          protected_files: '*.txt'
           preview_before_deploy: 'false'
-          protected_files: '*.css'
         continue-on-error: true
-      - name: Assert action ran with protected_files input
-        env:
-          OUTCOME: ${{ steps.action.outcome }}
+
+      - name: Assert action failed (expected with fake API key)
         run: |
-          echo "outcome: $OUTCOME"
-          # The action will fail because the API key is fake, but we verify
-          # it at least started (not skipped) and the protected_files input was accepted.
-          # A 'failure' outcome means the action ran and attempted the deploy (expected with fake key).
-          # A 'success' outcome would be unexpected in this context.
-          if [ "$OUTCOME" = "skipped" ]; then
-            echo "FAIL: action was skipped, expected it to run"
+          echo "outcome: ${{ steps.deploy.outcome }}"
+          if [ "${{ steps.deploy.outcome }}" != "failure" ]; then
+            echo "FAIL: expected action to fail with a fake API key (protected_files test), but got: ${{ steps.deploy.outcome }}"
             exit 1
           fi
-          echo "PASS: action ran with protected_files input (outcome: $OUTCOME)"
+          echo "PASS: action correctly failed with fake API key when protected_files is set"

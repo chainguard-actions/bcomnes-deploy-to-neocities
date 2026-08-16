@@ -1,4 +1,4 @@
-name: Test deploy with deprecated api_token input
+name: Test deploy with cleanup enabled
 on:
   workflow_dispatch:
 jobs:
@@ -9,16 +9,16 @@ jobs:
 
       - name: Create dist directory with sample files
         run: |
-          mkdir -p public
-          echo "<html><body>Deprecated Token Test</body></html>" > public/index.html
+          mkdir -p dist_output
+          echo "<html><body>Cleanup Test</body></html>" > dist_output/index.html
+          echo "p { margin: 0; }" > dist_output/main.css
 
       - id: deploy
         uses: .
         with:
           api_key: fake-api-key-for-testing
-          api_token: fake-deprecated-token
-          dist_dir: public
-          cleanup: 'false'
+          dist_dir: dist_output
+          cleanup: 'true'
           preview_before_deploy: 'false'
         continue-on-error: true
 
@@ -26,7 +26,7 @@ jobs:
         run: |
           echo "outcome: ${{ steps.deploy.outcome }}"
           if [ "${{ steps.deploy.outcome }}" != "failure" ]; then
-            echo "FAIL: expected action to fail with a fake API key (deprecated api_token test), but got: ${{ steps.deploy.outcome }}"
+            echo "FAIL: expected action to fail with a fake API key in cleanup mode, but got: ${{ steps.deploy.outcome }}"
             exit 1
           fi
-          echo "PASS: action correctly failed with fake API key when using deprecated api_token input"
+          echo "PASS: action correctly failed with fake API key in cleanup mode"
