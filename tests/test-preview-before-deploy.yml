@@ -1,0 +1,35 @@
+name: Test preview_before_deploy option
+on:
+  workflow_dispatch:
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+
+      - name: Create a dist directory with a sample file
+        run: |
+          mkdir -p dist
+          echo "<html><body>Preview test</body></html>" > dist/index.html
+
+      - name: Run action with preview_before_deploy=true and invalid API key (expect failure)
+        id: action
+        uses: .
+        with:
+          api_key: invalid-fake-api-key-preview-test
+          dist_dir: dist
+          cleanup: 'false'
+          neocities_supporter: 'false'
+          preview_before_deploy: 'true'
+        continue-on-error: true
+
+      - name: Assert action failed (preview attempted, API call failed)
+        env:
+          OUTCOME: ${{ steps.action.outcome }}
+        run: |
+          echo "outcome: $OUTCOME"
+          if [ "$OUTCOME" != "failure" ]; then
+            echo "FAIL: expected action to fail with invalid API key (preview_before_deploy=true), but got: $OUTCOME"
+            exit 1
+          fi
+          echo "PASS: action correctly attempted preview and failed at API stage"

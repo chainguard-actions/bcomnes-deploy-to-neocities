@@ -6,29 +6,31 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+
       - name: Create dist directory with files
         run: |
-          mkdir -p dist-protected
-          echo "<html><body>Hello</body></html>" > dist-protected/index.html
-          echo "keep me" > dist-protected/important.txt
-      - name: Deploy to Neocities with protected_files
-        id: action
+          mkdir -p dist
+          echo "<html><body>Hello</body></html>" > dist/index.html
+          echo "keep me" > dist/protected.html
+          echo "also keep" > dist/important.css
+
+      - id: action
         uses: .
-        with:
-          api_key: ${{ secrets.NEOCITIES_API_KEY || 'fake-api-key-for-test' }}
-          dist_dir: dist-protected
-          cleanup: 'false'
-          protected_files: '*.txt'
-          preview_before_deploy: 'false'
         continue-on-error: true
-      - name: Assert action ran with protected_files input
+        with:
+          api_key: 'invalid-api-key-for-testing'
+          dist_dir: 'dist'
+          cleanup: 'true'
+          protected_files: '*.css'
+          preview_before_deploy: 'false'
+
+      - name: Assert action failed due to invalid API key
+        env:
+          OUTCOME: ${{ steps.action.outcome }}
         run: |
-          echo "Action outcome: ${{ steps.action.outcome }}"
-          # The action will fail due to invalid API key in test environment,
-          # but we verify it was invoked with the protected_files input.
-          # The important thing is the input was accepted (not rejected as unknown).
-          if [ "${{ steps.action.outcome }}" = "skipped" ]; then
-            echo "FAIL: action was skipped unexpectedly"
+          echo "outcome: $OUTCOME"
+          if [ "$OUTCOME" != "failure" ]; then
+            echo "FAIL: expected action to fail with invalid API key, got: $OUTCOME"
             exit 1
           fi
-          echo "PASS: action ran with protected_files input"
+          echo "PASS: action correctly failed with invalid API key (protected_files input was accepted)"

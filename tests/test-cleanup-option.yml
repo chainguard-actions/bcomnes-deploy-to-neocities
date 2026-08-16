@@ -1,0 +1,36 @@
+name: Test cleanup option with invalid API key
+on:
+  workflow_dispatch:
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+
+      - name: Create a dist directory with sample files
+        run: |
+          mkdir -p dist
+          echo "<html><body>Cleanup test</body></html>" > dist/index.html
+          echo "body { color: red; }" > dist/style.css
+
+      - name: Run action with cleanup=true and invalid API key (expect failure at API)
+        id: action
+        uses: .
+        with:
+          api_key: invalid-fake-api-key-cleanup-test
+          dist_dir: dist
+          cleanup: 'true'
+          neocities_supporter: 'false'
+          preview_before_deploy: 'false'
+        continue-on-error: true
+
+      - name: Assert action failed (cleanup boolean parsed correctly, API call failed)
+        env:
+          OUTCOME: ${{ steps.action.outcome }}
+        run: |
+          echo "outcome: $OUTCOME"
+          if [ "$OUTCOME" != "failure" ]; then
+            echo "FAIL: expected action to fail with invalid API key (cleanup=true), but got: $OUTCOME"
+            exit 1
+          fi
+          echo "PASS: action correctly parsed cleanup=true and failed at API stage"

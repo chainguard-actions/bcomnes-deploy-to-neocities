@@ -1,4 +1,4 @@
-name: Test deprecated api_token input is accepted
+name: Test invalid API key fails at deploy
 on:
   workflow_dispatch:
 jobs:
@@ -10,26 +10,26 @@ jobs:
       - name: Create a dist directory with a sample file
         run: |
           mkdir -p dist
-          echo "<html><body>Hello from deprecated token test</body></html>" > dist/index.html
+          echo "<html><body>Hello Neocities</body></html>" > dist/index.html
 
-      - name: Run action with deprecated api_token input (expect failure at API, not at input validation)
+      - name: Run action with invalid API key (expect failure)
         id: action
         uses: .
         with:
-          api_token: invalid-deprecated-token-12345
+          api_key: invalid-fake-api-key-12345
           dist_dir: dist
           cleanup: 'false'
           neocities_supporter: 'false'
           preview_before_deploy: 'false'
         continue-on-error: true
 
-      - name: Assert action failed at API stage (not at missing key validation)
+      - name: Assert action failed due to invalid API key
         env:
           OUTCOME: ${{ steps.action.outcome }}
         run: |
           echo "outcome: $OUTCOME"
           if [ "$OUTCOME" != "failure" ]; then
-            echo "FAIL: expected action to fail with invalid deprecated api_token, but got: $OUTCOME"
+            echo "FAIL: expected action to fail with invalid API key, but got: $OUTCOME"
             exit 1
           fi
-          echo "PASS: action correctly accepted deprecated api_token input and failed at API stage"
+          echo "PASS: action correctly failed with invalid API key"

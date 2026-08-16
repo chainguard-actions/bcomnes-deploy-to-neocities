@@ -7,21 +7,24 @@ jobs:
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
 
-      - id: action
+      - name: Run action with non-existent dist_dir (expect failure)
+        id: action
         uses: .
         with:
           api_key: fake-api-key-for-testing
           dist_dir: nonexistent-directory-that-does-not-exist
+          cleanup: 'false'
+          neocities_supporter: 'false'
           preview_before_deploy: 'false'
         continue-on-error: true
 
-      - name: Assert action failed due to missing directory
+      - name: Assert action failed due to missing dist_dir
         env:
           OUTCOME: ${{ steps.action.outcome }}
         run: |
           echo "outcome: $OUTCOME"
           if [ "$OUTCOME" != "failure" ]; then
-            echo "FAIL: expected action to fail when dist_dir does not exist, got outcome=$OUTCOME"
+            echo "FAIL: expected action to fail when dist_dir does not exist, but got: $OUTCOME"
             exit 1
           fi
           echo "PASS: action correctly failed when dist_dir does not exist"
