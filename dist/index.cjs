@@ -55930,17 +55930,19 @@ function gte(i, y) {
 }
 function expand_(str, max, isTop) {
   const expansions = [];
-  const m = balanced("{", "}", str);
-  if (!m)
-    return [str];
-  const pre = m.pre;
-  const post = m.post.length ? expand_(m.post, max, false) : [""];
-  if (/\$$/.test(m.pre)) {
-    for (let k = 0; k < post.length && k < max; k++) {
-      const expansion = pre + "{" + m.body + "}" + post[k];
-      expansions.push(expansion);
+  for (; ; ) {
+    const m = balanced("{", "}", str);
+    if (!m)
+      return [str];
+    const pre = m.pre;
+    if (/\$$/.test(m.pre)) {
+      const post2 = m.post.length ? expand_(m.post, max, false) : [""];
+      for (let k = 0; k < post2.length && k < max; k++) {
+        const expansion = pre + "{" + m.body + "}" + post2[k];
+        expansions.push(expansion);
+      }
+      return expansions;
     }
-  } else {
     const isNumericSequence = /^-?\d+\.\.-?\d+(?:\.\.-?\d+)?$/.test(m.body);
     const isAlphaSequence = /^[a-zA-Z]\.\.[a-zA-Z](?:\.\.-?\d+)?$/.test(m.body);
     const isSequence = isNumericSequence || isAlphaSequence;
@@ -55948,10 +55950,12 @@ function expand_(str, max, isTop) {
     if (!isSequence && !isOptions) {
       if (m.post.match(/,(?!,).*\}/)) {
         str = m.pre + "{" + m.body + escClose + m.post;
-        return expand_(str, max, true);
+        isTop = true;
+        continue;
       }
       return [str];
     }
+    const post = m.post.length ? expand_(m.post, max, false) : [""];
     let n;
     if (isSequence) {
       n = m.body.split(/\.\./);
@@ -56015,8 +56019,8 @@ function expand_(str, max, isTop) {
         }
       }
     }
+    return expansions;
   }
-  return expansions;
 }
 
 // node_modules/minimatch/dist/esm/assert-valid-pattern.js

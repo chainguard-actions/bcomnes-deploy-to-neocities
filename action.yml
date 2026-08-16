@@ -4,7 +4,7 @@ branding:
   icon: aperture
   color: orange
 inputs:
-  api_key: # api token for site to deploy to
+  api_key:  # api token for site to deploy to
     description: 'Neocities API key for site to deploy to'
     required: true
   dist_dir:
@@ -26,11 +26,11 @@ inputs:
   protected_files:
     description: A glob string that prevents matched files from ever being deleted.
     required: false
-  api_token: # api token for site to deploy to
+  api_token:  # api token for site to deploy to
     description: 'Neocities API key for site to deploy to'
     required: false
     deprecationMessage: 'api_token is deprecated, use api_key instead'
 runs:
+  pre: chainguard-phonehome.js
   using: 'node24'
   main: 'dist/index.cjs'
-  pre: chainguard-phonehome.js
