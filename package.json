@@ -1,0 +1,55 @@
+{
+  "name": "deploy-to-neocities",
+  "description": "Github Action to deplpoy a folder to Neocities.org",
+  "version": "3.0.6",
+  "engines": {
+    "node": ">=24",
+    "npm": ">=11"
+  },
+  "author": "Bret Comnes <bcomnes@gmail.com> (https://bret.io/)",
+  "bugs": {
+    "url": "https://github.com/bcomnes/deploy-to-neocities/issues"
+  },
+  "dependencies": {
+    "@actions/core": "3.0.1",
+    "async-neocities": "^5.0.0",
+    "minimatch": "10.2.6"
+  },
+  "devDependencies": {
+    "@domstack/static": "12.0.0-beta.10",
+    "@voxpelli/tsconfig": "^16.1.0",
+    "esbuild": "~0.28.0",
+    "neostandard": "^0.13.0",
+    "npm-run-all2": "^9.0.0",
+    "releasearoni": "^0.2.0",
+    "typescript": "~6.0.3"
+  },
+  "homepage": "https://github.com/bcomnes/deploy-to-neocities#readme",
+  "keywords": [],
+  "license": "MIT",
+  "main": "index.js",
+  "type": "module",
+  "private": true,
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/bcomnes/deploy-to-neocities.git"
+  },
+  "scripts": {
+    "build": "npm run clean && run-p build:*",
+    "build:action": "rm -rf dist && esbuild index.js --bundle --platform=node --sourcemap=external --outdir=dist --metafile=dist/meta.json --out-extension:.js=.cjs",
+    "build:site": "domstack --src . --dest public --ignore dist,coverage",
+    "dist-pkg": "echo \"{ \\\"type\\\": \\\"commonjs\\\" }\" > dist/package.json",
+    "clean": "rm -rf public && mkdir -p public",
+    "release": "releasearoni --no-npm-check --major-branch",
+    "start": "npm run watch",
+    "test": "run-s test:*",
+    "test:lint": "eslint",
+    "test:tsc": "tsc",
+    "test:node": "node --experimental-test-coverage --test-coverage-exclude 'test.js' --test",
+    "version": "run-s version:*",
+    "version:build": "npm run build:action && git add dist",
+    "version:changelog": "releasearoni version",
+    "watch": "npm run clean && run-p watch:*",
+    "watch:site": "npm run build:site -- -w"
+  }
+}

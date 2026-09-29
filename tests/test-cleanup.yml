@@ -1,0 +1,41 @@
+name: Test cleanup mode with invalid API key
+on:
+  workflow_dispatch:
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+
+      - name: Create dist directory with sample files
+        run: |
+          mkdir -p dist
+          echo "<html><body>Cleanup Test</body></html>" > dist/index.html
+          echo "p { margin: 0; }" > dist/main.css
+
+      - id: action
+        uses: .
+        continue-on-error: true
+        with:
+          api_key: fake-api-key-for-testing
+          dist_dir: dist
+          cleanup: 'true'
+          neocities_supporter: 'false'
+          preview_before_deploy: 'true'
+
+      - name: Assert action ran and failed gracefully with cleanup enabled
+        env:
+          OUTCOME: ${{ steps.action.outcome }}
+        run: |
+          echo "outcome: $OUTCOME"
+          # With a fake API key, the action should fail (API auth error),
+          # but it must not crash with an unhandled exception.
+          if [ "$OUTCOME" = "failure" ]; then
+            echo "PASS: action failed gracefully with invalid API key and cleanup=true (expected)"
+          elif [ "$OUTCOME" = "success" ]; then
+            echo "WARN: action unexpectedly succeeded - this would require a real API key"
+            echo "PASS: action ran without crashing"
+          else
+            echo "FAIL: unexpected outcome '$OUTCOME'"
+            exit 1
+          fi

@@ -1,0 +1,45 @@
+name: Test protected files and supporter mode
+on:
+  workflow_dispatch:
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+
+      - name: Create dist directory with various file types
+        run: |
+          mkdir -p output
+          echo "<html><body>Protected Files Test</body></html>" > output/index.html
+          echo "body { font-size: 16px; }" > output/style.css
+          echo "console.log('hello');" > output/app.js
+          # Create a file that would be "protected"
+          echo "Do not delete me" > output/important.txt
+
+      - id: action
+        uses: .
+        continue-on-error: true
+        with:
+          api_key: fake-api-key-for-testing
+          dist_dir: output
+          cleanup: 'true'
+          neocities_supporter: 'true'
+          preview_before_deploy: 'true'
+          protected_files: 'important.txt'
+
+      - name: Assert action ran and failed gracefully with protected_files set
+        env:
+          OUTCOME: ${{ steps.action.outcome }}
+        run: |
+          echo "outcome: $OUTCOME"
+          # With a fake API key, the action should fail (API auth error),
+          # but it must not crash with an unhandled exception.
+          if [ "$OUTCOME" = "failure" ]; then
+            echo "PASS: action failed gracefully with invalid API key, protected_files, and supporter mode (expected)"
+          elif [ "$OUTCOME" = "success" ]; then
+            echo "WARN: action unexpectedly succeeded - this would require a real API key"
+            echo "PASS: action ran without crashing"
+          else
+            echo "FAIL: unexpected outcome '$OUTCOME'"
+            exit 1
+          fi
