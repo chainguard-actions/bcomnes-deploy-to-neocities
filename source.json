@@ -4,8 +4,13 @@
   "version": "v3.0.6",
   "commit_sha": "44e42387b3267e31432ca34b01f013b94956f2f2",
   "url": "https://github.com/bcomnes/deploy-to-neocities",
-  "policy_sha": "d636be7e43ef829af6e853da6b3c7566db9f72fe",
+  "policy_sha": "374911c4be584df24e6da57af2d990570ef0f859",
   "test_policy_sha": "843adf9e4b8f85d0c08b27b9d0b09dd094b54702",
   "test_agent_version": "2",
-  "harden_agent_version": "2"
+  "harden_agent_version": "2",
+  "dist_artifact": {
+    "gcs_uri": "gs://patch-actions-node-artifacts/dist-artifacts/bcomnes/deploy-to-neocities/v3.0.6/sha256-5e8648bb4508b88c69ef1dfee516a5a27daf017aed142a11ada33fe726c55908.tar.gz",
+    "sha256": "5e8648bb4508b88c69ef1dfee516a5a27daf017aed142a11ada33fe726c55908",
+    "size_bytes": 1544210
+  }
 }
